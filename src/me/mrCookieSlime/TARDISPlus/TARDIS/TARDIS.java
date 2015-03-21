@@ -30,7 +30,7 @@ public class TARDIS extends TARDISUtil {
 	
 	String id;
 	Set<Location> exterior;
-	Set<Location> door;
+	List<Location> door;
 	World interior;
 	Location location;
 	Location spawn;
@@ -61,7 +61,7 @@ public class TARDIS extends TARDISUtil {
 			blocks.put(decodeLocation(location).getBlock(), this);
 		}
 		
-		this.door = new HashSet<Location>();
+		this.door = new ArrayList<Location>();
 		
 		for (String block: cfg.getStringList("door")) {
 			door.add(decodeLocation(block));
@@ -105,19 +105,7 @@ public class TARDIS extends TARDISUtil {
 		
 		save();
 	}
-
-	public void land(Location l) {
-		this.location = l;
-		try {
-			this.exterior = Schematic.loadSchematic(new File("TARDIS+/schematics/" + direction.toString() + ".schematic")).pasteSchematic(l);
-			this.door = new HashSet<Location>();
-			this.door.add(l.getBlock().getRelative(direction.toFace()).getLocation());
-			this.door.add(l.getBlock().getRelative(BlockFace.UP).getRelative(direction.toFace()).getLocation());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
+	
 	private void save() {
 		Config cfg = new Config(new File("TARDIS+/TARDIS/" + id + ".TARDIS"));
 		
@@ -145,8 +133,36 @@ public class TARDIS extends TARDISUtil {
 		cfg.save();
 	}
 
+	public void land(Location l) {
+		this.location = l;
+		try {
+			this.exterior = Schematic.loadSchematic(new File("TARDIS+/schematics/" + direction.toString() + ".schematic")).pasteSchematic(l);
+			this.door = new ArrayList<Location>();
+			this.door.add(l.getBlock().getRelative(direction.toFace()).getLocation());
+			this.door.add(l.getBlock().getRelative(BlockFace.UP).getRelative(direction.toFace()).getLocation());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void rotate(BlockFace face) {
+		try {
+			this.direction = Rotation.valueOf(face.toString());
+			this.exterior = Schematic.loadSchematic(new File("TARDIS+/schematics/" + direction.toString() + ".schematic")).pasteSchematic(location);
+			this.door = new ArrayList<Location>();
+			this.door.add(location.getBlock().getRelative(direction.toFace()).getLocation());
+			this.door.add(location.getBlock().getRelative(BlockFace.UP).getRelative(direction.toFace()).getLocation());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void enter(Player p) {
 		p.teleport(spawn);
+	}
+	
+	public void leave(Player p) {
+		p.teleport(door.get(1).getBlock().getRelative(direction.toFace()).getRelative(direction.toFace()).getLocation());
 	}
 
 }
