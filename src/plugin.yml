@@ -1,0 +1,7 @@
+name: TARDISPlus
+version: 1.0
+author: mrCookieSlime
+website: http://dev.bukkit.org/profiles/mrCookieSlime/bukkit-plugins/
+softdepend: [CS-CoreLib]
+
+main: me.mrCookieSlime.TARDISPlus.TARDISPlus
