@@ -1,8 +1,11 @@
 package me.mrCookieSlime.TARDISPlus;
 
+import java.io.File;
+
 import me.mrCookieSlime.CSCoreLibPlugin.PluginUtils;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.CSCoreLibSetup.CSCoreLibLoader;
+import me.mrCookieSlime.TARDISPlus.TARDIS.TARDIS;
 import me.mrCookieSlime.TARDISPlus.items.AccessoireListener;
 import me.mrCookieSlime.TARDISPlus.races.TimeLord.RegenerationListener;
 
@@ -19,6 +22,13 @@ public class TARDISPlus extends JavaPlugin implements Listener {
 		CSCoreLibLoader loader = new CSCoreLibLoader(this);
 		
 		if (loader.load()) {
+			if (!new File("TARDIS+/worlds").exists()) new File("TARDIS+/worlds").mkdirs();
+			if (!new File("TARDIS+/TARDIS").exists()) new File("TARDIS+/TARDIS").mkdirs();
+			
+			for (File file: new File("TARDIS+/TARDIS").listFiles()) {
+				new TARDIS(file);
+			}
+			
 			PluginUtils utils = new PluginUtils(this);
 			utils.setupConfig();
 			cfg = utils.getConfig();
