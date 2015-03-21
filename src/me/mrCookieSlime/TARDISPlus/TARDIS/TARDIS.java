@@ -1,6 +1,9 @@
 package me.mrCookieSlime.TARDISPlus.TARDIS;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +18,7 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
 
@@ -26,6 +30,7 @@ public class TARDIS extends TARDISUtil {
 	
 	String id;
 	Set<Location> exterior;
+	Set<Location> door;
 	World interior;
 	Location location;
 	Location spawn;
@@ -34,6 +39,7 @@ public class TARDIS extends TARDISUtil {
 	List<String> companions;
 	
 	TARDISMode mode;
+	Rotation direction;
 	
 	public TARDIS(File file) {
 		Config cfg = new Config(file);
@@ -44,7 +50,9 @@ public class TARDIS extends TARDISUtil {
 		this.home = decodeLocation(cfg.getString("home"));
 		this.doctors = cfg.getStringList("owners");
 		this.companions = cfg.getStringList("members");
+		
 		this.mode = TARDISMode.valueOf(cfg.getString("mode"));
+		this.direction = Rotation.valueOf(cfg.getString("direction"));
 		
 		this.exterior = new HashSet<Location>();
 		
@@ -53,14 +61,90 @@ public class TARDIS extends TARDISUtil {
 			blocks.put(decodeLocation(location).getBlock(), this);
 		}
 		
+		this.door = new HashSet<Location>();
+		
+		for (String block: cfg.getStringList("door")) {
+			door.add(decodeLocation(block));
+		}
+		
 		ChunkGenerator generator = new TARDISWorldGenerator();
-		WorldCreator creator = new WorldCreator("TARDIS+/worlds/" + id).environment(Environment.THE_END).generateStructures(false).generator(generator);
+		WorldCreator creator = new WorldCreator("TARDIS+/worlds/" + id)
+		.environment(Environment.THE_END)
+		.generateStructures(false)
+		.generator(generator);
 		
 		this.interior = Bukkit.createWorld(creator);
 		
 		tardises.add(this);
+		ids.put(id, this);
 	}
 	
+	public TARDIS(Player p, Location l) {
+		this.id = String.valueOf(System.currentTimeMillis());
+		
+		this.location = l;
+		this.home = l;
+//		this.spawn = 
+		this.doctors = Arrays.asList(p.getUniqueId().toString());
+		this.companions = new ArrayList<String>();
+		this.mode = TARDISMode.LANDED;
+		this.direction = getFacing(p);
+		
+		land(l);
+		
+		ChunkGenerator generator = new TARDISWorldGenerator();
+		WorldCreator creator = new WorldCreator("TARDIS+/worlds/" + id)
+		.environment(Environment.THE_END)
+		.generateStructures(false)
+		.generator(generator);
+		
+		this.interior = Bukkit.createWorld(creator);
+		
+		tardises.add(this);
+		ids.put(id, this);
+		
+		save();
+	}
+
+	public void land(Location l) {
+		this.location = l;
+		try {
+			this.exterior = Schematic.loadSchematic(new File("TARDIS+/schematics/" + direction.toString() + ".schematic")).pasteSchematic(l);
+			this.door = new HashSet<Location>();
+			this.door.add(l.getBlock().getRelative(direction.toFace()).getLocation());
+			this.door.add(l.getBlock().getRelative(BlockFace.UP).getRelative(direction.toFace()).getLocation());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void save() {
+		Config cfg = new Config(new File("TARDIS+/TARDIS/" + id + ".TARDIS"));
+		
+		cfg.setValue("id", id);
+		cfg.setValue("position", encodeLocation(location));
+//		cfg.setValue("spawn", encodeLocation(spawn));
+		cfg.setValue("home", encodeLocation(home));
+		cfg.setValue("owners", doctors);
+		cfg.setValue("members", companions);
+		cfg.setValue("mode", mode.toString());
+		cfg.setValue("direction", direction.toString());
+		
+		Set<String> blocks = new HashSet<String>();
+		for (Location block: exterior) {
+			blocks.add(encodeLocation(block));
+		}
+		cfg.setValue("exterior", blocks);
+		
+		Set<String> doors = new HashSet<String>();
+		for (Location block: door) {
+			doors.add(encodeLocation(block));
+		}
+		cfg.setValue("door", doors);
+		
+		cfg.save();
+	}
+
 	public void enter(Player p) {
 		p.teleport(spawn);
 	}
