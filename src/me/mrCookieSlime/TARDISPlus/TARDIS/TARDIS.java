@@ -12,9 +12,11 @@ import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.ChunkGenerator;
 
 public class TARDIS extends TARDISUtil {
 	
@@ -51,7 +53,10 @@ public class TARDIS extends TARDISUtil {
 			blocks.put(decodeLocation(location).getBlock(), this);
 		}
 		
-		this.interior = Bukkit.createWorld(new WorldCreator(id));
+		ChunkGenerator generator = new TARDISWorldGenerator();
+		WorldCreator creator = new WorldCreator("TARDIS+/worlds/" + id).environment(Environment.THE_END).generateStructures(false).generator(generator);
+		
+		this.interior = Bukkit.createWorld(creator);
 		
 		tardises.add(this);
 	}
