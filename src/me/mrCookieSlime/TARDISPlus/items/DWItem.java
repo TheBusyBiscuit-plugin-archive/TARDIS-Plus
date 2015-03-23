@@ -20,11 +20,11 @@ public enum DWItem {
 	BOW_TIE(new CustomArmor(new CustomItem(new ItemStack(Material.LEATHER_CHESTPLATE), "&rBow Tie"), Color.fromRGB(99, 33, 33)), false);
 	
 	ItemStack item;
-	boolean accessoire;
+	boolean accessory;
 	
-	DWItem(ItemStack item, boolean accessoire) {
+	DWItem(ItemStack item, boolean accessory) {
 		this.item = item;
-		this.accessoire = accessoire;
+		this.accessory= accessory;
 	}
 	
 	public ItemStack getItem() {
@@ -32,7 +32,7 @@ public enum DWItem {
 	}
 	
 	public boolean isWearable() {
-		return accessoire;
+		return accessory;
 	}
 	
 }
