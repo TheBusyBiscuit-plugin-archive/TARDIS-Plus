@@ -24,7 +24,7 @@ public enum DWItem {
 	
 	DWItem(ItemStack item, boolean accessory) {
 		this.item = item;
-		this.accessory= accessory;
+		this.accessory = accessory;
 	}
 	
 	public ItemStack getItem() {
